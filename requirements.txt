@@ -4,3 +4,8 @@ pandas
 schedule
 python-dotenv
 praw
+openpyxl
+requests
+schedule
+tqdm
+
