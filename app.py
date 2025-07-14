@@ -43,8 +43,16 @@ st.header("Step 2: Rewrite with GPT-4o")
 
 if st.button("✍️ Rewrite Posts"):
     with st.spinner("Rewriting posts using GPT-4o..."):
-        post_rewriter.main()
-    st.success("✅ Rewriting complete. Output saved to `rewritten_posts.json`.")
+        try:
+            post_rewriter.main()
+            st.success("✅ Rewriting complete. Output saved to `rewritten_posts.json`.")
+        except Exception as e:
+            error_msg = str(e).lower()
+            if "insufficient_quota" in error_msg or "quota" in error_msg:
+                st.error("❌ Your OpenAI API key has run out of quota. Please upgrade your OpenAI plan.")
+                st.info("💡 You can try the paraphraser version of this app instead.")
+            else:
+                st.error(f"❌ An unexpected error occurred: {e}")
 
 # Preview rewritten posts
 if os.path.exists("rewritten_posts.json"):
@@ -73,4 +81,4 @@ if st.button("🚀 Post to Heartbeat"):
         st.error("⚠️ No rewritten content to post. Please rewrite posts first.")
 
 st.markdown("---")
-st.caption("Built by Kmex using Streamlit + OpenAI + Reddit + Heartbeat")
+st.caption("Built using Streamlit + OpenAI + Reddit + Heartbeat")
