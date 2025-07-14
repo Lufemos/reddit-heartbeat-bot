@@ -3,64 +3,74 @@ import json
 import os
 
 from reddit_scraper import main as scrape_reddit
-from post_rewriter import main as rewrite_posts
+import post_rewriter
 from post_to_heartbeat import post_to_heartbeat
 
+# Set Streamlit layout
 st.set_page_config(page_title="AI Community Builder", layout="wide")
-st.title("🤖 AI-Powered Reddit-to-Heartbeat Automation")
+st.title("🤖 AI-Powered Reddit to Heartbeat Automation")
 
-st.markdown("This app scrapes Reddit posts, rewrites them using GPT-4o, and posts them to your Heartbeat community.")
+st.markdown("""
+Welcome to the AI Community Content Automator. This tool allows you to:
+1. Scrape fresh Reddit posts by topic.
+2. Rewrite them using GPT-4o for clarity and tone.
+3. Post the rewritten content directly to your Heartbeat community platform.
+""")
 
-# === STEP 1: Scrape Reddit ===
-st.header("Step 1: Scrape New Reddit Posts")
+# === Step 1: Scrape Reddit ===
+st.header("Step 1: Scrape Reddit Posts")
 
-if st.button("🔍 Scrape Reddit Now"):
-    with st.spinner("Scraping posts from Reddit..."):
+if st.button("🔍 Scrape Now"):
+    with st.spinner("Collecting new posts from Reddit..."):
         scrape_reddit()
-    st.success("✅ Scraping completed. Posts saved to `new_posts.json`.")
+    st.success("✅ Posts scraped successfully! Check below for preview.")
 
 # Preview scraped posts
 if os.path.exists("new_posts.json"):
     with open("new_posts.json", "r", encoding="utf-8") as f:
-        new_posts = json.load(f)
-    st.subheader("📋 Preview of Scraped Reddit Posts")
-    for post in new_posts[:5]:
+        scraped_posts = json.load(f)
+    st.subheader("📄 Preview: Scraped Posts")
+    for post in scraped_posts[:5]:
         st.markdown(f"**Subreddit:** r/{post['subreddit']}")
         st.markdown(f"**Title:** {post['title']}")
         st.markdown(f"**Body:** {post.get('selftext', '')[:300]}...")
         st.markdown("---")
+else:
+    st.info("No scraped posts found yet.")
 
-# === STEP 2: Rewrite Posts ===
-st.header("Step 2: Rewrite Posts with GPT-4o")
+# === Step 2: Rewrite Posts ===
+st.header("Step 2: Rewrite with GPT-4o")
 
 if st.button("✍️ Rewrite Posts"):
-    with st.spinner("Rewriting posts..."):
-        rewrite_posts()
-    st.success("✅ Rewriting completed. Output saved to `rewritten_posts.json`.")
+    with st.spinner("Rewriting posts using GPT-4o..."):
+        post_rewriter.main()
+    st.success("✅ Rewriting complete. Output saved to `rewritten_posts.json`.")
 
 # Preview rewritten posts
 if os.path.exists("rewritten_posts.json"):
     with open("rewritten_posts.json", "r", encoding="utf-8") as f:
         rewritten = json.load(f)
-    st.subheader("🔁 Preview of Rewritten Posts")
+    st.subheader("✏️ Preview: Rewritten Content")
     for post in rewritten[:5]:
         st.markdown(f"**Subreddit:** r/{post['subreddit']}")
-        st.text_area("Rewritten Text", value=post['rewritten_text'], height=150)
+        st.text_area("Rewritten Output", value=post['rewritten_text'], height=150)
         st.markdown("---")
+else:
+    st.info("No rewritten posts found yet.")
 
-# === STEP 3: Post to Heartbeat ===
-st.header("Step 3: Post to Heartbeat Community")
+# === Step 3: Post to Heartbeat ===
+st.header("Step 3: Publish to Heartbeat Community")
 
 if st.button("🚀 Post to Heartbeat"):
     if os.path.exists("rewritten_posts.json"):
         with open("rewritten_posts.json", "r", encoding="utf-8") as f:
-            posts_to_send = json.load(f)
-        with st.spinner("Posting to Heartbeat..."):
-            for post in posts_to_send:
+            posts_to_publish = json.load(f)
+        with st.spinner("Sending posts to Heartbeat..."):
+            for post in posts_to_publish:
                 post_to_heartbeat(post["subreddit"], post["rewritten_text"])
-        st.success("✅ All posts have been published to Heartbeat!")
+        st.success("✅ All content posted to Heartbeat!")
     else:
-        st.error("⚠️ No rewritten posts found. Please run Step 2 first.")
+        st.error("⚠️ No rewritten content to post. Please rewrite posts first.")
 
 st.markdown("---")
-st.caption("Built with Streamlit + OpenAI + Reddit + Heartbeat")
+st.caption("Built by Kmex using Streamlit + OpenAI + Reddit + Heartbeat")
